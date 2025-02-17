@@ -1,6 +1,15 @@
 import discord
 import os
 from dotenv import load_dotenv  # Securely load environment variables
+import requests
+import json
+
+def get_quote():
+    response = requests.get("https://zenquotes.io/api/random")
+    json_data = json.loads(response.text)
+    quote = json_data[0]['q'] + " -" + json_data[0]['a']
+    return quote
+    
 
 # Load the .env file (if using)
 load_dotenv()
@@ -22,6 +31,9 @@ async def on_message(message):
 
     if message.content.startswith('$hello'):
         await message.channel.send('Hello! How can I help you today?')
+    if message.content.startswith('$inspire'):
+        quote = get_quote()
+        await message.channel.send(quote)
 
 # Fetch the token securely from .env
 TOKEN = os.getenv("DISCORD_BOT_TOKEN")
