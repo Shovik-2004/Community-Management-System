@@ -10,6 +10,9 @@ from replit import db  # Replit database
 # List of sad words for encouragement
 sad_words = ["sad", "depressed", "unhappy", "angry", "miserable", "depressing"]
 
+if "responding" not in db.keys():
+  db["responding"] = True
+
 # Function to get an inspirational quote
 def get_quote():
     try:
