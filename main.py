@@ -3,30 +3,22 @@ import os
 import requests
 import json
 import random
-from dotenv import load_dotenv  # Securely load environment variables
+import time
+from dotenv import load_dotenv
 from replit import db  # Replit database
 
 # List of sad words for encouragement
 sad_words = ["sad", "depressed", "unhappy", "angry", "miserable", "depressing"]
 
-# Default encouraging messages
-starter_encouragements = [
-    "Cheer up!",
-    "Hang in there.",
-    "You are a great person / bot!"
-]
-
 # Function to get an inspirational quote
 def get_quote():
     try:
-        response = requests.get("https://zenquotes.io/api/random")
+        response = requests.get("https://zenquotes.io/api/random", timeout=5)
         json_data = json.loads(response.text)
         quote = json_data[0]['q'] + " -" + json_data[0]['a']
         return quote
     except Exception as e:
-        return f"Error fetching quote: {str(e)}"
-
-# Function to update encouragement messages
+        return "Stay strong! You're amazing! 😊"
 def update_encouragements(encouraging_message):
     if "encouragements" in db.keys():
         encouragements = list(db["encouragements"])  # Convert to a normal list
@@ -47,10 +39,32 @@ def delete_encouragement(index):
             return "Invalid index."
     return "No encouragements to delete."
 
+# Backup happiness messages
+happy_messages = [
+    "Happiness depends upon ourselves. -Aristotle",
+    "Smile, it's free therapy. -Douglas Horton",
+    "Happiness is not something ready-made. It comes from your own actions. -Dalai Lama",
+    "Do what makes your soul shine! 😊",
+    "Every day is a new beginning, take a deep breath and start again!"
+]
+
+# Function to get a happiness-boosting message
+def get_happy_message():
+    url = "https://zenquotes.io/api/random"
+    for _ in range(3):  # Try 3 times
+        try:
+            response = requests.get(url, timeout=5)
+            response.raise_for_status()
+            json_data = json.loads(response.text)
+            return json_data[0]['q'] + " -" + json_data[0]['a']
+        except requests.exceptions.RequestException:
+            time.sleep(2)  # Wait before retrying
+    return random.choice(happy_messages)  # Use fallback quotes
+
 # Load environment variables from .env file
 load_dotenv()
 
-# Define intents (message_content must be enabled!)
+# Define intents
 intents = discord.Intents.default()
 intents.message_content = True  
 
@@ -68,7 +82,7 @@ async def on_message(message):
     if message.author == client.user:
         return  # Ignore bot's own messages
 
-    msg = message.content.lower()  # Convert message to lowercase for better matching
+    msg = message.content.lower()
 
     # Greet the user
     if msg.startswith('$hello'):
@@ -79,12 +93,14 @@ async def on_message(message):
         quote = get_quote()
         await message.channel.send(quote)
 
-    # Respond with encouragement if message contains a sad word
+    # Respond with a happiness-boosting message if a sad word is detected
     if any(word in msg for word in sad_words):
-        options = starter_encouragements
-        if "encouragements" in db.keys():
-            options += list(db["encouragements"])  # Convert to list before concatenation
-        await message.channel.send(random.choice(options))
+        happy_message = get_happy_message()
+        await message.channel.send(happy_message)
+
+    # Respond to "thanks"
+    if "thanks" in msg or "thank you" in msg:
+        await message.channel.send("You're welcome! 😊")
 
     # Add a new encouragement message
     if msg.startswith("$new"):
@@ -100,10 +116,6 @@ async def on_message(message):
             await message.channel.send(result)
         except ValueError:
             await message.channel.send("⚠️ Please provide a valid number.")
-
-    # Respond to "thanks"
-    if "thanks" in msg or "thank you" in msg:
-        await message.channel.send("You're welcome! 😊")
 
 # Fetch bot token from environment variable
 TOKEN = os.getenv("DISCORD_BOT_TOKEN")
