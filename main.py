@@ -7,6 +7,14 @@ import time
 from dotenv import load_dotenv
 from replit import db  # Replit database
 
+# List of abusive words to filter
+abusive_words = {"sex", "fuck", "bitch", "fucker", "suicide", "bully", "fat", "fucked"}
+
+# Function to check if a message contains abusive language
+def is_abusive(text):
+    words = set(text.lower().split())  # Convert text to lowercase and split into words
+    return any(word in words for word in abusive_words)
+
 # List of sad words for encouragement
 sad_words = ["sad", "depressed", "unhappy", "angry", "miserable", "depressing"]
 
@@ -20,11 +28,13 @@ def get_quote():
         json_data = json.loads(response.text)
         quote = json_data[0]['q'] + " -" + json_data[0]['a']
         return quote
-    except Exception as e:
+    except Exception:
         return "Stay strong! You're amazing! 😊"
+
+# Function to update encouragements
 def update_encouragements(encouraging_message):
     if "encouragements" in db.keys():
-        encouragements = list(db["encouragements"])  # Convert to a normal list
+        encouragements = list(db["encouragements"])
         encouragements.append(encouraging_message)
         db["encouragements"] = encouragements
     else:
@@ -33,8 +43,8 @@ def update_encouragements(encouraging_message):
 # Function to delete encouragement messages
 def delete_encouragement(index):
     if "encouragements" in db.keys():
-        encouragements = list(db["encouragements"])  # Convert to a normal list
-        if 0 <= index < len(encouragements):  # Ensure valid index
+        encouragements = list(db["encouragements"])
+        if 0 <= index < len(encouragements):
             del encouragements[index]
             db["encouragements"] = encouragements
             return "Encouragement deleted."
@@ -54,15 +64,15 @@ happy_messages = [
 # Function to get a happiness-boosting message
 def get_happy_message():
     url = "https://zenquotes.io/api/random"
-    for _ in range(3):  # Try 3 times
+    for _ in range(3):
         try:
             response = requests.get(url, timeout=5)
             response.raise_for_status()
             json_data = json.loads(response.text)
             return json_data[0]['q'] + " -" + json_data[0]['a']
         except requests.exceptions.RequestException:
-            time.sleep(2)  # Wait before retrying
-    return random.choice(happy_messages)  # Use fallback quotes
+            time.sleep(2)
+    return random.choice(happy_messages)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -86,6 +96,12 @@ async def on_message(message):
         return  # Ignore bot's own messages
 
     msg = message.content.lower()
+
+    # Check for abusive language and delete the message if detected
+    if is_abusive(msg):
+        await message.delete()
+        await message.channel.send(f"⚠️ {message.author.mention}, your message was removed due to inappropriate content.")
+        return  # Stop further processing for this message
 
     # Greet the user
     if msg.startswith('$hello'):
