@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from replit import db  # Replit database
 
 # List of abusive words to filter
-abusive_words = {"sex", "fuck", "bitch", "fucker", "suicide", "bully", "fat", "fucked"}
+abusive_words = {"sex", "fuck", "bitch", "fucker", "suicide", "bully", "fat", "fucked", "mother fucker"}
 
 # Function to check if a message contains abusive language
 def is_abusive(text):
