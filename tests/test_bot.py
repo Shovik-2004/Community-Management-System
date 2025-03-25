@@ -2,6 +2,7 @@ import pytest
 import sys
 import os
 from unittest.mock import patch, MagicMock
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Mock replit.db before importing main.py
@@ -13,7 +14,6 @@ with patch("replit.db", new_callable=MagicMock) as mock_db:
 
     from main import is_abusive  # Import after mocking db
 
-# 1️⃣ Test `is_abusive`
 @pytest.mark.parametrize("message, expected", [
     ("This is a normal message", False),
     ("You are a bitch", True),
@@ -23,5 +23,4 @@ with patch("replit.db", new_callable=MagicMock) as mock_db:
 def test_is_abusive(message, expected):
     """Test if abusive words are correctly detected."""
     result = is_abusive(message)
-    print(f"Checking: '{message}' -> {result}")  # Debugging output
     assert result == expected
