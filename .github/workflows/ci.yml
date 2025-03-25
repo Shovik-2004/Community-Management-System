@@ -27,7 +27,8 @@ jobs:
 
       - name: Run Tests
         env:
-          DISCORD_BOT_TOKEN: "fake-token"  # Mock token to prevent CI failure
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+ failure
         run: pytest --disable-warnings  # Run tests with warnings disabled
 
       - name: Deploy Bot

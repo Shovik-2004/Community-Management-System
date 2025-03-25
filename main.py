@@ -6,6 +6,7 @@ import random
 import time
 from dotenv import load_dotenv
 from replit import db  # Replit database
+import sys
 
 # List of abusive words to filter
 abusive_words = {"sex", "fuck", "bitch", "fucker", "suicide", "bully", "fat", "fucked", "mother fucker", "bitch"}
@@ -144,4 +145,9 @@ if not TOKEN:
     raise ValueError("❌ No token found! Set DISCORD_BOT_TOKEN in the .env file.")
 
 # Run the bot
-client.run(TOKEN)
+
+
+# Run the bot only if NOT in a testing environment
+if __name__ == "__main__" and "pytest" not in sys.modules:
+    client.run(TOKEN)
+
