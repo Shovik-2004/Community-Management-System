@@ -6,11 +6,11 @@ from dotenv import load_dotenv  # Ensure environment variables are loaded
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-# Load environment variables from .env
+# Load .env file for local testing
 load_dotenv()
 
-# Mock replit.db before importing main.py
-with patch("replit.db", new_callable=MagicMock) as mock_db:
+# Mock replit.db and DISCORD_BOT_TOKEN before importing main.py
+with patch("replit.db", new_callable=MagicMock) as mock_db, patch.dict(os.environ, {"DISCORD_BOT_TOKEN": os.getenv("DISCORD_BOT_TOKEN", "fake-token")}):
     mock_db.keys.return_value = ["responding"]
     mock_db.__contains__.side_effect = lambda key: key in ["responding"]
     mock_db.__getitem__.side_effect = lambda key: {"encouragements": ["Keep going!"]}[key] if key == "encouragements" else None
