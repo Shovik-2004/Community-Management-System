@@ -2,8 +2,12 @@ import pytest
 import sys
 import os
 from unittest.mock import patch, MagicMock
+from dotenv import load_dotenv  # Ensure environment variables are loaded
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+# Load environment variables from .env
+load_dotenv()
 
 # Mock replit.db before importing main.py
 with patch("replit.db", new_callable=MagicMock) as mock_db:
